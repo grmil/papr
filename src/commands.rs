@@ -1,5 +1,6 @@
 use anyhow::Result;
 use std::path::Path;
+use src::Library;
 
 pub fn add(_doi: &str) -> Result<()> {
     todo!()
@@ -10,7 +11,8 @@ pub fn import(_entry: &Path) -> Result<()> {
 }
 
 pub fn list() -> Result<()> {
-    todo!()
+    let library = Library.load(path);
+
 }
 
 pub fn search(_query: &[String]) -> Result<()> {
