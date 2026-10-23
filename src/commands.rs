@@ -1,6 +1,7 @@
+use crate::LIBRARY_PATH;
+use crate::library::Library;
 use anyhow::Result;
 use std::path::Path;
-use src::Library;
 
 pub fn add(_doi: &str) -> Result<()> {
     todo!()
@@ -11,8 +12,13 @@ pub fn import(_entry: &Path) -> Result<()> {
 }
 
 pub fn list() -> Result<()> {
-    let library = Library.load(path);
+    let library = Library::load(LIBRARY_PATH.into())?;
 
+    for p in &library.papers {
+        println!("{} | {} | {}", p.key, p.title, p.authors.join(", "));
+    }
+
+    Ok(())
 }
 
 pub fn search(_query: &[String]) -> Result<()> {

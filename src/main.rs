@@ -1,4 +1,7 @@
 mod commands;
+mod library;
+
+pub const LIBRARY_PATH: &str = "library.bib";
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
