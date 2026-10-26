@@ -15,7 +15,7 @@ pub fn list() -> Result<()> {
     let library = Library::load(LIBRARY_PATH.into())?;
 
     for p in &library.papers {
-        println!("{} | {} | {}", p.key, p.title, p.authors.join(", "));
+        println!("{} | {} | {}", p.key, p.title, p.authors.join("; "));
     }
 
     Ok(())
