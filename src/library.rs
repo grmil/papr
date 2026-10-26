@@ -1,5 +1,6 @@
 use anyhow::Result;
 use biblatex::{Bibliography, ChunksExt};
+use std::collections::HashMap;
 use std::{fs, path::PathBuf};
 
 pub struct Paper {
@@ -48,7 +49,7 @@ impl Paper {
 
 pub struct Library {
     path: PathBuf,
-    pub papers: Vec<Paper>,
+    pub papers: HashMap<String, Paper>,
 }
 
 impl Library {
