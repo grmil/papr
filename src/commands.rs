@@ -23,9 +23,9 @@ pub fn import(entry: &Path) -> Result<()> {
     let src = fs::read_to_string(&entry)?;
 
     // Add entry to the main bibliography
-    // TODO: implement add_entry()
     library.add_entry(&src)?;
 
+    library.save()?;
     Ok(())
 }
 
