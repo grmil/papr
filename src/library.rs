@@ -1,5 +1,5 @@
 use anyhow::Result;
-use biblatex::{Bibliography, ChunksExt};
+use biblatex::{Bibliography, ChunksExt, Entry};
 use std::collections::HashMap;
 use std::{fs, path::PathBuf};
 
@@ -55,19 +55,22 @@ pub struct Library {
 impl Library {
     // Pull in an convert bibtex entries from a .bib file
     pub fn load(path: PathBuf) -> Result<Self> {
-        let bib = {
-            let file = fs::read_to_string(&path)?;
-            Bibliography::parse(&file)
-        };
+        let text = fs::read_to_string(&path)?;
 
-        let papers = bib?.into_vec().into_iter().map(Paper::from_entry).collect();
+        let papers: HashMap<String, Paper> = Bibliography::parse(&text)?
+            .into_vec()
+            .into_iter()
+            .map(Paper::from_entry)
+            .map(|p| (p.key.clone(), p))
+            .collect();
+
         Ok(Self { path, papers })
     }
 
     // Save the loaded bibtex entries to a file
     pub fn save(&self) -> Result<()> {
         let mut bib = Bibliography::new();
-        for p in &self.papers {
+        for p in self.papers.values() {
             bib.insert(p.citation.clone());
         }
 
@@ -76,6 +79,19 @@ impl Library {
         let tmp = self.path.with_extension("bib.tmp");
         fs::write(&tmp, text)?;
         fs::rename(&tmp, &self.path)?;
+
         Ok(())
+    }
+
+    pub fn add_entry(&mut self, src: &str) -> Result<usize> {
+        let entries = Bibliography::parse(src)?.into_vec();
+        let count = entries.len();
+
+        for entry in entries {
+            let paper = Paper::from_entry(entry);
+            self.papers.insert(paper.key.clone(), paper);
+        }
+
+        Ok(count)
     }
 }
