@@ -1,29 +1,22 @@
 use crate::LIBRARY_PATH;
-use crate::library::{Library, Paper};
+use crate::library::Library;
 use anyhow::Result;
-use std::{fs, path::Path};
+use std::path::Path;
 
-pub fn add(doi: &str) -> Result<()> {
+pub fn add(src: &str) -> Result<()> {
     let mut library = Library::load(LIBRARY_PATH.into())?;
 
-    // Scan the web and scrape a citation
-    // TODO: implement pull_from_doi()
-    //let src: String = pull_from_doi(&doi)?;
+    let s = src.trim();   
 
-    // Add entry to the main bibliography
-    //library.add_entry(&src)?;
-
-    Ok(())
-}
-
-pub fn import(entry: &Path) -> Result<()> {
-    let mut library = Library::load(LIBRARY_PATH.into())?;
-
-    // Load the bibliography file into a bibliography object
-    let src = fs::read_to_string(&entry)?;
-
-    // Add entry to the main bibliography
-    library.add_entry(&src)?;
+    if s.starts_with('@') {
+        library.add_from_bibtex(s)?;
+    } else if Path::new(s).exists() {
+        library.add_from_path(s.into())?;
+    } else if s.starts_with("10.") && s.contains('/') {
+        library.add_from_doi(s)?;
+    } else {
+        anyhow::bail!("not a DOI, BibTeX string, or existing file: {s}");
+    }
 
     library.save()?;
     Ok(())

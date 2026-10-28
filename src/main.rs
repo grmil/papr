@@ -5,7 +5,6 @@ pub const LIBRARY_PATH: &str = "library.bib";
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
-use std::path::PathBuf;
 
 /// A command line research paper manager
 #[derive(Parser)]
@@ -19,14 +18,8 @@ struct Cli {
 enum Commands {
     /// Add a citation and pdf by the paper's DOI
     Add {
-        /// The DOI of the paper
-        doi: String,
-    },
-
-    /// Add a citation from a BibTeX entry
-    Import {
-        /// The file containing the BibTeX entry
-        entry: PathBuf,
+        /// A path, string, or doi that is to be added
+        src: String,
     },
 
     /// Show all papers in the library
@@ -67,8 +60,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Add { doi } => commands::add(&doi),
-        Commands::Import { entry } => commands::import(&entry),
+        Commands::Add { src } => commands::add(&src),
         Commands::List => commands::list(),
         Commands::Search { query } => commands::search(&query),
         Commands::Remove { key } => commands::remove(&key),

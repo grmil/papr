@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::{fs, path::PathBuf};
 
 pub struct Paper {
-    citation: biblatex::Entry,
+    citation: Entry,
 
     pub key: String,
     pub title: String,
@@ -16,7 +16,7 @@ pub struct Paper {
 
 impl Paper {
     // Unwrap a bitex entry and save it to the paper struct
-    pub fn from_entry(entry: biblatex::Entry) -> Self {
+    pub fn from_entry(entry: Entry) -> Self {
         let get = |name: &str| entry.get(name).map(|c| c.format_verbatim());
 
         let key = entry.key.clone();
@@ -83,15 +83,42 @@ impl Library {
         Ok(())
     }
 
-    pub fn add_entry(&mut self, src: &str) -> Result<usize> {
-        let entries = Bibliography::parse(src)?.into_vec();
-        let count = entries.len();
-
+    // Combine two bibliographies
+    fn merge(&mut self, bib: Bibliography) -> Result<()> {
+        let entries = bib.into_vec();
         for entry in entries {
             let paper = Paper::from_entry(entry);
             self.papers.insert(paper.key.clone(), paper);
         }
 
-        Ok(count)
+        Ok(())
+    }
+
+    pub fn add_from_bibtex(&mut self, src: &str) -> Result<()> {
+        let bib = Bibliography::parse(src)?;
+        self.merge(bib)?;
+        Ok(())
+    }
+
+    pub fn add_from_path(&mut self, path: PathBuf) -> Result<()> {
+        let src = fs::read_to_string(&path)?;
+        let bib = Bibliography::parse(&src)?;
+        self.merge(bib)?;
+        Ok(())
+    }
+
+    // Only takes doi, manaully appends the stuff for address lookup
+    pub fn add_from_doi(&mut self, doi: &str) -> Result<()> {
+        let url = format!("https://doi.org/{doi}");   
+
+        let src = reqwest::blocking::Client::new()
+            .get(url)
+            .header("Accept", "application/x-bibtex")
+            .send()?
+            .text()?;
+
+        let bib = Bibliography::parse(&src)?;
+        self.merge(bib)?;
+        Ok(())
     }
 }
